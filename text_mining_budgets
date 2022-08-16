@@ -1,0 +1,1406 @@
+##text mining of Ghana budgets 1999 - 2022
+#by Paul A Agbodza
+#dated Aug 16, 2022
+#Ghana R Users lecture
+
+##preamble
+
+#TEXTUAL ANALYTICS OF THE GHANA 1999-2022 BUDGET STATEMENTS WITH R
+## by Paul A Agbodza
+
+## OBJECTIVE
+#transform big textual data to numeric data e.g. sparse matrix
+##binary matrix
+
+#map towns and villages showing their associated projects over the years
+
+##information retrieval: The process of finding names, people, places, and 
+#other entities, from a given text is known as Named Entity Recognition (NER)
+
+#here it is done manually and using different approaches
+
+
+
+##workflow
+
+library(knitr)
+library(kableExtra)
+
+
+my_process1 <- read.table(text = 
+                            "operation/                             example/                     alternatives
+importing text or data/        pdftools, readxl/          antiword, readtext, read.csv
+string operations/    stringi, stringr/            base (with regex and perl)
+preprocessing/         tidytext, quanteda/        stringi, tokenizers, stopwords, tm
+document-term matrix DTM/  tm, tidytext, quanteda/       Matrix
+filtering and weighting/  tm, tidytext, quanteda/         Matrix
+dictionary/           quanteda/     tm, tidytext
+supervised machine learning/   quanteda, e1071/     RTextTools, kerasR  
+text statistics/        quanteda, quanteda.textstats/    koRpus, corpustools
+word-distance & collocation/  quanteda quanteda.textstats/   quanteda, tidytext
+word-cloud & word-cooccurrence / wordcloud, quanteda, ComplexUpset, ggplot2 /wordcloud2, UpsetR
+network graph / igraph, ggraph, quanteda.textplots /
+geo-mapping/ ggplot2, leaflet, plot_ly / ggmap, sf, rgdal, shapefile, base, raster
+", sep = "/", header = TRUE)
+
+
+knitr::kable(my_process1, 
+             caption = "Table 1: An overview of text analysis and exploratory data analysis\n 
+             operations, with R packages used", 
+             format = "html", font_size = 14,
+             booktabs = TRUE, full_width = FALSE) %>%
+  add_header_above(c(" " = 1, "R packages" = 2), color = "navyblue")|>
+  column_spec(c(1,2), border_right = TRUE, color = "grey20")|>
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  kableExtra::group_rows("Data preparation", 1, 5) %>%
+  kableExtra::group_rows("Analysis", 6, 8)%>%
+  kableExtra::group_rows("Exploratory Data Analysis", 9, 12)
+
+
+##previous work
+
+##No 1
+"Code for Ghana
+Text Mining of MidTerm Budget Speech of Finance Minister
+20 JUL 2015"
+#https://www.codeforghana.org/2015/07/20/midterm_data_mining.html
+
+
+##2
+"Adjei, A., Mensah, L.E. and Okoh, H. (2015), “Transitivity in political discourse
+– a study of the major process types in the 2009 state-of-the-Nation address in Ghana”, 
+Journal of Literature, Languages and Linguistics, Vol. 10, pp. 23-32."
+
+
+##3
+#Adu-Ampong, E. (2017), “State of the nation address and tourism priorities 
+#in Ghana- a contextual analysis”, 
+#Tourism Planning & Development, Vol. 14 No. 1, pp. 135-138
+
+
+##4
+"Mary Jonah
+Asempa to Adwuma (The 2017 and 2018 Ghanaian Budgets)
+November 24, 2017 "
+#https://maryjonah.me/2017/11/asempa-to-adwuma-the-2017-and-2018-ghanaian-budgets/
+  
+#text mining of 2017 and 2018 budgets (very simple functions and easy to follow)
+
+
+##5
+"Laurent Smeets 2021 (Ghana Stuff) Feb 13, 2021 
+Using Tidytext and SpacyR in R to do Sentiment Analysis on the COVID-19 
+Update Speeches by the President of Ghana."
+#https://ghanadatastuff.com/post/text_analysis_covid/
+  
+##6
+#Capistrano, R.C. and Notorio, P.A. (2021), "A content analysis of the future 
+#of tourism through the presidential state of the nation address in the Philippines 
+#(1987-2019)", Journal of Tourism Futures, Vol. 7 No. 1, pp. 131-146. "
+#https://doi.org/10.1108/JTF-05-2020-0075
+
+#Using a qualitative data software
+
+
+###7
+"State of the Nation Addresses - Ghana
+Annual State of the Nation Addresses"
+
+#https://www.kaggle.com/datasets/citizen-ds-ghana/sona-ghana
+"What are the key topics over the years? Can the state of the nation address 
+highlight main problems/talking points in each year?"
+  
+#ghana-datasets
+#A curated and actively maintained listing of datasets for learning and social good projects.
+#https://ds4good.github.io/ghana-datasets/
+  
+
+  ##8
+#Where Geospatial
+#SONA Mapping (2021)
+#https://wheregeospatial.com/state-of-the-nation-addresses-sona-mapping/
+  "As geospatial scientists, we believe these State of the Nation addresses 
+contain location-based information that can be mapped to reveal complex patterns 
+that would have otherwise not been obvious."
+
+#
+##9
+#Paul A Agbodza
+#Mapping the Ghana budget statement of 2012 with R
+#January 2021
+#DOI: 10.13140/RG.2.2.33435.80163 
+#https://www.researchgate.net/profile/Paul-A-Agbodza
+
+
+##10
+
+#https://digimarshals.com/massive-social-media-public-uproar-on-ghanas-2022-budget-statement-dmi-sentiment-analysis-report/
+
+"Insights on public reactions to Ghana’s 2022 Budget
+Social Media Sentiment Analysis Report by Digital Marshals Institute Jan 12, 2022
+Analysis of tweets on the budget 2022"
+
+
+###11
+#P A Agbodza
+
+#https://github.com/pagbodza/text_mining_ghana_budgets
+#Mapping Ghana’s investment in Research and Development from budget statements and publication records
+
+#https://github.com/pagbodza/text_mining_ghana_budgets/blob/main/research_and_development
+
+
+
+
+##where are the budgets located?
+##budgets of Ghana 1999 - 2022
+#download documents Ghana Budget Statements in pdf from
+
+#https://mofep.gov.gh/sites/default/files/budget-statements/
+#https://www.mofep.gov.gh/sites/default/files/budget-statements/
+
+##ghanaweb
+#https://www.ghanaweb.com/GhanaHomePage/economy/budget.php
+
+
+
+
+##### PART ONE #######################################
+
+
+
+##load packages
+
+library(tidyverse)
+
+"tidyverse_system
+ggplot2 3.3.6     ✔ purrr   0.3.4
+✔ tibble  3.1.8     ✔ dplyr   1.0.9
+✔ tidyr   1.2.0     ✔ stringr 1.4.0
+✔ readr   2.1.2     ✔ forcats 0.5.1
+── Conflicts ─────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()"
+
+
+rqd_packages <- c("tm", "wordcloud", "wordcloud2",
+                  "quanteda", "igraph", "tidytext", "ggraph", "pdftools", "readxl",
+                  "lubridate", "readtext") 
+
+# to load multiple packages at once to R, we can use a combination of 
+#the lapply() and require() functions:
+lapply(rqd_packages, require, character.only = TRUE)    # Load multiple packages
+
+
+##Load Multiple Packages at Once in R
+
+
+"tidyverse_system
+ggplot2 3.3.6     ✔ purrr   0.3.4
+✔ tibble  3.1.8     ✔ dplyr   1.0.9
+✔ tidyr   1.2.0     ✔ stringr 1.4.0
+✔ readr   2.1.2     ✔ forcats 0.5.1
+── Conflicts ─────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()"
+
+
+
+# Create vector of packages
+rqd_packages <- c("tm", "wordcloud", "wordcloud2",
+                  "quanteda", "igraph", "tidytext", "ggraph", "pdftools", "readxl",
+                  "lubridate", "readtext") 
+
+# to load multiple packages at once to R, we can use a combination of 
+#the lapply() and require() functions:
+lapply(rqd_packages, require, character.only = TRUE)    # Load multiple packages
+
+
+
+
+#loading document and creating data frame
+
+budget_text_df <- data.frame(document = "B2000",
+                              text = sapply("~/2000_Budget_Statement.pdf", function(x) 
+                                paste0(pdf_text(x), collapse = ' ')))
+
+rownames(budget_text_df) <- NULL
+
+
+
+
+budget_text_df$text  <- str_remove_all(budget_text_df$text , c("\\bhave\\b"))
+#budget_text_df[grep("Have", budget_text_df$text), c(1,2)] 
+
+
+
+#main references
+
+#1
+#https://cran.r-project.org/web/packages/tidytext/vignettes/tidytext.html
+#Introduction to tidytext
+#Julia Silge and David Robinson 2022-05-09
+
+#2
+Taylor Arnold & Lauren Tilton
+Humanities Data in R: Exploring Networks, Geospatial Data,
+Images, and Text (2015)
+NY: Springer International Publishing Switzerland
+#ch 10 Text Analysis
+
+#3
+DATA MINING FOR BUSINESS ANALYTICS
+Concepts, Techniques, and Applications in R
+Galit Shmueli, Peter C. Bruce, Inbal Yahav
+Nitin R. Patel, Kenneth C. Lichtendahl, Jr. (2018),
+NJ: John Wiley & Sons, Inc.
+ch 20 Text Mining
+
+
+#split the text of the statement into a data frame by sections
+
+
+budget_sections_2 <- budget_text_df %>%
+  group_by(document) %>%
+  tidytext::unnest_tokens(section, text, token = "regex", 
+                          pattern = "^Section|SECTION", to_lower = FALSE) %>% 
+  ungroup()%>%mutate(rownames_to_column(., "rowID"))
+
+
+dim(budget_sections_2)
+#[1] 14   3
+
+budget_sections <- budget_sections_2[-c(1:8),]
+
+dim(budget_sections)
+#6, 3
+
+
+names(budget_sections)[c(1,2)] <- c("author", "text")
+
+
+
+##continue cleaning the data
+
+
+budget_sections$text <- str_remove_all(budget_sections$text, pattern = "^\\f")##footer
+budget_sections$text <- str_remove_all(budget_sections$text, "")
+
+#budget_sections$text <- str_replace_all(budget_sections$text, "\\n", " ")
+budget_sections$text <- str_squish(budget_sections$text)
+
+budget_sections$text <- iconv(budget_sections$text, from="", to="ASCII//TRANSLIT")
+budget_sections$text <- gsub('\\bdroughtrelated\\b', 'drought related', 
+                             budget_sections$text)
+budget_sections$text <- gsub('\\bjasikanyendi\\b', 'jasikan yendi', budget_sections$text)
+budget_sections$text <- gsub('\\bsustainingconfidencethefuturetheghanaianeconomy\\b', 
+                             ' ', budget_sections$text)
+
+budget_sections$text <- stringi::stri_replace_all_regex(budget_sections$text,
+                          c("\\bconstructi\\b", "\\bministeries\\b", "\\bamt\\b", "\\binistry\\b", 
+      "\\bsch\\b", "\\bgetf\\b", "\\bdomesticfinanced\\b"),  c("construction","ministries",
+                       "amount", "ministry", "school", "getfund", "domestic financed"), 
+                                                        vectorize_all = FALSE)
+
+budget_sections$text <- str_squish(budget_sections$text)
+
+
+
+##############
+
+budget_df_sentences <- 
+  unnest_tokens(budget_sections, input = "text", output = "sentence", 
+                token = "regex", pattern = "(?<!\\b\\p{L}r)\\.")
+
+#common abbreviations such as "Mr." or "Dr." being interpreted as sentence endings
+##1383 3
+
+
+
+
+budget_df_sentences$sentence <- str_remove_all(budget_df_sentences$sentence, "^0+")
+budget_df_sentences$sentence <- str_remove_all(budget_df_sentences$sentence, 
+                                        c("\\bmahama\\b", "\\bhqrts\\b", "\\baddo\\b", "\\bdramani\\b",
+                                     "\\bqtr\\b", "\\bnpp\\b", "\\bndc\\b"))
+
+budget_df_sentences$sentence <- gsub("[[:digit:][:punct:]]", " ", budget_df_sentences$sentence)
+
+#budget_df_sentences$sentence <- gsub(" *\\b(?<!-)\\p{L}{1,2}(?!-)\\b *", " ", 
+#                                     budget_df_sentences$sentence, perl = TRUE)
+
+budget_df_sentences$sentence <- str_squish(budget_df_sentences$sentence)
+
+#count sentence length in each row
+budget_df_sentences <- budget_df_sentences|>filter(sentence != "")|>
+  filter(sentence != "introduction" & sentence != "million" & sentence != "billion")|>
+  mutate(count2 = stringi::stri_count_words(sentence))
+
+budget_df_sentences$sentence <- gsub(" *\\b(?<!-)\\p{L}{1}(?!-)\\b *", " ", 
+                                     budget_df_sentences$sentence, perl = TRUE)
+                                     
+budget_df_sentences <- budget_df_sentences|>filter(sentence != "")
+budget_df_sentences$sentence <- str_squish(budget_df_sentences$sentence)
+##1102 4
+
+redundant_list <- c("minister", "hon", "speaker", "mister", "per", "cent", "cedi", "review", 
+                    "budget", "first", "use", "end", "madam", "lady", "gentlemen", "motherland", "parliament",
+                    "also", "percent", "president", "national", "mr", "deputy", "government", "republic", "presented",
+                    "statement",  "ghana", "honourable", "mister", "gh", "ministry", "million", "will", "thousand",
+                    "excellency", "chairman", "excellencies", "members", ".", ",", "your", "|", "year", "billion",
+                    "performance", "sector", "flt", "nana", "billions cedis", "introduction",
+                    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+                    "ten", "zero", "minister", "hon", "speaker", "mister", "per", "cent", "cedi", 
+                    "budget", "first", "use", "end", "madam", "lady", "gentlemen", "motherland", "parliament",
+                    "also", "percent", "president", "national", "mr", "deputy", "government", "republic", "presented",
+                    "statement",  "ghana", "honourable", "mister", "gh", "ministry", "million", "will", "thousand",
+                    "excellency", "chairman", "excellencies", "members", ".", ",", "your", "|", "year", "billions",
+                    "speech", "sector", "mun", "sessional", "appendix", "table", "flt", "nana", "trillion", "the",
+                    "introduction", "speaker", "beg", "move", "house", "approves", "budget", "statement",
+                    "billion", "billions", "for", "will", "and", "with", "conclusion", "introduction",
+                    "acronyms", "abbreviations", "theme", "minister", "hon", "speaker", "mister", "per", 
+                    "cent", "cedi", "budget", "first", "use", "end", "madam", "lady", "gentlemen", 
+                    "motherland", "parliament","also", "percent", "president", "national", "mr", 
+                    "deputy", "government", "republic", "presented","statement",  "ghana", "honourable",
+                    "mister", "gh", "ministry", "million", "will", "thousand", "excellency", "chairman",
+                    "excellencies", "members", ".", ",", "your", "|", "year", "billion",
+                    "performance", "sector", "flt", "nana", "billions cedis", "introduction",
+                    "@", "¢", "", "say", "outlookfor", "whiles", "puttingghanabackwork", "pobox")
+
+#create word boundaries: look for word separated by a white space
+
+redundant_list <- paste0("\\b", redundant_list, "\\b")
+stopword_sent_list <- as_tibble(stopwords::stopwords("en"))|>filter(value != "have") 
+stopword_sent_list <- paste0("\\b", stopword_sent_list$value, "\\b")
+
+
+budget_df_sentences <- budget_df_sentences|>
+  mutate(sentence = stringi::stri_replace_all_regex(sentence, redundant_list, " ", 
+                                                    vectorize_all = FALSE))|>
+  mutate(sentence = stringi::stri_replace_all_regex(sentence,
+                                                    stopword_sent_list, " ", vectorize_all = FALSE))|>
+  filter(sentence != "")
+
+budget_df_sentences$sentence <- str_remove_all(budget_df_sentences$sentence, "\\bfig\\b")
+
+budget_df_sentences$sentence <- stringi::stri_replace_all_regex(budget_df_sentences$sentence, 
+                            c("\\bgov\\b", "\\bdevt\\b", "\\biii\\b", "\\bprov\\b",
+               "\\bministryoffinanceghana\\b", "\\bres\\b", "\\bdept\\b"), "", 
+                                 vectorize_all = FALSE)
+
+budget_df_sentences$sentence <- stringi::stri_replace_all_regex(budget_df_sentences$sentence, 
+                         c("\\bbrighter\\b", "\\baligning\\b", "\\btransformational\\b", "\\bprosperity\\b",
+                          "\\bindicative\\b", "\\bputting\\b", "\\bfellow\\b", "\\bghanaian\\b"), "", 
+                                    vectorize_all = FALSE)
+
+budget_df_sentences$sentence <- stringi::stri_replace_all_regex(budget_df_sentences$sentence, 
+                       c("\\bghanaians\\b", "\\baddress\\b", "\\bghc\\b", "\\bprov\\b"), "", 
+                                                                vectorize_all = FALSE)
+budget_df_sentences$sentence <- 
+  stringi::stri_replace_all_regex(budget_df_sentences$sentence, 
+                                  c("\\bocoa\\b", "\\bevenue\\b"), c("cocoa","revenue"), 
+                                  vectorize_all = FALSE)
+
+
+budget_df_sentences$sentence <- 
+  stringi::stri_replace_all_regex(budget_df_sentences$sentence, 
+                                  c("\\bission\\b", "\\bdevelopm\\b", "\\bparliametary"), 
+                                  c("mission","development", "parliamentary"), 
+                                  vectorize_all = FALSE)
+
+
+budget_df_sentences$sentence <- str_squish(budget_df_sentences$sentence)
+budget_df_sentences <- budget_df_sentences|>filter(sentence != "")
+
+#1001 × 4
+
+
+budget_df_sentences <- budget_df_sentences|>filter(sentence != "")
+#budget_df_sentences$sentence <- gsub("[[:digit:][:punct:]]", "", budget_df_sentences$sentence)
+budget_df_sentences$sentence <- str_squish(budget_df_sentences$sentence)
+
+
+
+#2.2 Stop words
+#Now that the data is in a tidy “one-word-per-row” format, we can
+#manipulate it with packages like dplyr. Often in text analysis, we will 
+#want to remove stop words: We can remove stop words in our data by using the stop words provided
+#in the package stopwords with an anti_join() from the package dplyr.
+
+library(stopwords) 
+#library(tibble)
+
+redundant <- data.frame(sentence = c("minister", "hon", "speaker", "mister", "per", "cent", "cedi", 
+                                     "budget", "first", "use", "end", "madam", "lady", "gentlemen", "motherland", "parliament",
+                                     "also", "percent", "president", "national", "mr", "deputy", "government", "republic", "presented",
+                                     "statement",  "ghana", "honourable", "mister", "gh", "ministry", "million", "will", "thousand",
+                                     "excellency", "chairman", "excellencies", "members", ".", ",", "your", "|", "year", "billion",
+                                     "performance", "sector", "flt", "nana", "billions cedis", 
+                                     "introduction"))
+
+
+#stopword_sent <- as_tibble(stopwords::stopwords("en")) 
+stopword_sent <- as_tibble(stopwords::stopwords("en"))|>filter(value != "have") 
+stopword_sent <- rename(stopword_sent, sentence = value)
+
+budget_df_sentences <- anti_join(budget_df_sentences, stopword_sent, by = 'sentence')
+
+budget_df_sentences <- anti_join(budget_df_sentences, redundant, by = 'sentence')|>
+  mutate(sentence = stringr::str_remove_all(sentence, pattern = "[0-9]"))|>
+  filter(sentence != "", sentence != " ")
+
+
+zahlen <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+            "ten", "zero")
+
+redundant2 <- data.frame(word = c("minister", "hon", "speaker", "mister", "per", "cent", "cedi", 
+                                  "budget", "first", "use", "end", "madam", "lady", "gentlemen", "motherland", "parliament",
+                                  "also", "percent", "president", "national", "mr", "deputy", "government", "republic", "presented",
+                                  "statement",  "ghana", "honourable", "mister", "gh", "ministry", "million", "will", "thousand",
+                                  "excellency", "chairman", "excellencies", "members", ".", ",", "your", "|", "year", "billions",
+                                  "speech", "sector", "mun", "sessional", "appendix", "table", "flt", "nana", "trillion", "the",
+                                  "introduction", "speaker", "beg", "move", "house", "approves", "budget", "statement",
+                                  "billion", "billions", "for", "will", "and", "with", "conclusion", "introduction",
+                                  "acronyms", "abbreviations", "theme", "minister", "hon", "speaker", "mister", "per", 
+                                  "cent", "cedi", "budget", "first", "use", "end", "madam", "lady", "gentlemen", 
+                                  "motherland", "parliament","also", "percent", "president", "national", "mr", 
+                                  "deputy", "government", "republic", "presented","statement",  "ghana", "honourable",
+                                  "mister", "gh", "ministry", "million", "will", "thousand", "excellency", "chairman",
+                                  "excellencies", "members", ".", ",", "your", "|", "year", "billion",
+                                  "performance", "sector", "flt", "nana", "billions cedis", "introduction", 
+                                  zahlen))
+
+
+budget_df_sentences <- anti_join(budget_df_sentences, redundant2, by = c('sentence' = "word"))
+
+
+budget_df_sentences <- budget_df_sentences|>filter(sentence != "", sentence != " ")
+budget_df_sentences <- budget_df_sentences|>filter(sentence != "")
+
+
+budget_df_sentences$sentence <- trimws(budget_df_sentences$sentence, which = "both")
+
+dim(budget_df_sentences)
+# 1001 4
+
+
+
+#sentence_count <- count(budget_df_sentences, sentence, sort = TRUE)
+
+###data is now clean and so can be used for any analysis
+
+#############################
+
+
+###fetch the names of towns in Ghana and create a small set
+
+#load the ghana towns data
+
+gha_settlement <- read_excel("~//gha_settlements.xlsx")
+
+##two sets of names of towns
+
+village_df <- gha_settlement$NAME 
+vilag2 <- c(data.frame(twns = gha_settlement|>select(REFNAME)|>
+                         filter(REFNAME != "NA")|>unlist()))
+
+village_df <- c(village_df, vilag2$twns) ##14991
+
+
+
+########################## PART TWO: TEXTUAL ANALYSIS
+
+# break the text into individual tokens 
+
+
+library(tidytext)
+
+tidy_word_sections <- budget_df_sentences %>% select(-rowID)%>%
+  tidytext::unnest_tokens(word, sentence) %>%#select(-count2)|>
+  group_by(word) %>%
+  ungroup()
+
+dim(tidy_word_sections) ## 9163 3   
+#document word
+
+
+#The tidy data structure allows different types of exploratory data analysis
+#(EDA), which we turn to next.
+
+#3 Exploratory data analysis
+#3.1 Term frequency (tf)
+#An important question in text mining is how to quantify what a document 
+#is about. One measure of how important a word may be is its term frequency (tf),
+#i.e. how frequently a word occurs in a document.
+
+
+library(tidytext)
+
+
+#You may notice expressions like “_k”, “co” in the budget text and “fig” 
+#in the Tesla text. Let’s remove these and other less meaningful words with 
+#a custom list of stop words and use anti_join() to remove them.
+
+newstopwords <- tibble(word = c("eq", "co", "rc", "ac", "ak", "bn", 
+                                "fig", "file", "cg", "cb", "cm",
+                                "ab", "_k", "_k_", "_x", "npp", "dramani",
+                                "mahama", "nana", "ndc", "qtr", "addo",
+                                "hqtrs", "bright", "stimulating", "\\bhqtrs\\b",
+                                "departm", "us", "amount", "total"))
+
+tidy_word_sections <- anti_join(tidy_word_sections, newstopwords, by = "word")
+#8936 3
+
+
+#Now we plot the data again without the new stopwords:
+
+tidy_word_sections %>%
+  count(author, word, sort = TRUE) %>%
+  group_by(author) %>%
+  top_n(20) %>%
+  ungroup() %>%
+  ggplot(aes(reorder_within(word, n, author), n,
+             fill = author)) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  scale_x_reordered() +
+  coord_flip() +
+  #facet_wrap(~author, scales = "free") +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme_classic(base_size = 12) +
+  labs(fill = "Author", 
+       title="Most frequent words after removing stop words again", 
+       subtitle="Top 20 words by budget year",
+       x= NULL, 
+       y= "Word Count")+
+  theme(plot.title = element_text(lineheight=.8, face="bold")) 
+
+#+scale_fill_brewer()   
+
+
+#You also may want to visualize the most frequent terms as a simple word cloud:
+
+library(wordcloud)
+
+tidy_word_sections %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 60, colors = rainbow(10)))
+
+
+#3.2 Term frequency and inverse document frequency (tf-idf)
+
+#that are characteristic for one document within a collection
+#of documents. The tidytext package uses an implementation of tf-idf 
+#consistent with tidy data principles that enables us to see how different
+#words are important in documents within a collection or corpus of documents
+
+# is TF-IDF transformation. We can (and usually should) apply it 
+#to our DTM. It will not only normalize DTM, but also increase the 
+#weight of terms which are specific to a single document or handful 
+#of documents and decrease the weight for terms used in most documents
+
+
+
+############################## PART THREE ###################################
+
+##find towns related to road construction per euclidean distance
+
+
+#You can start by tokenizing it into a one-row-per-word data frame, adding a 
+#position column, and removing stopwords:
+
+
+budget_roads <- tibble(text = budget_df_sentences$sentence)%>%
+  unnest_tokens(word, text) %>%
+  mutate(position = row_number()) %>%
+  filter(!word %in% tm::stopwords("en"))|>
+  filter(!word %in% c("and", "the", "for", "has", "was", "its",
+                      "will", "ghana", "with", "also", "our", "this", "that", 
+                      "all", "are", "have", "them", "ghana", "speaker", "madam"))
+
+
+#You can then find just the word ROAD, and use difference_inner_join() 
+#from fuzzyjoin to find all rows within 15 words of those rows. You can then 
+#use group_by() and summarize() to get your desired statistics for each word.
+
+library(fuzzyjoin)
+
+budget_roads$word <- gsub("\\broads\\b", "road", budget_roads$word)
+budget_roads[budget_roads$word=="road",]
+
+
+nearby_budget_roads <- budget_roads %>%
+  filter(word == "road")%>%
+  select(focus_term = word, focus_position = position) %>%
+  dplyr::select(-focus_term)%>%
+  difference_inner_join(budget_roads, by = c(focus_position = "position"), 
+                        max_dist = 15) %>%
+  mutate(distance = abs(focus_position - position))
+
+# 54,329 × 5
+
+nearby_budget_roads_dist <- nearby_budget_roads %>%
+  group_by(word, distance) %>%
+  summarize(number = n(),
+            max_distance = max(distance),
+            min_distance = min(distance),
+            avg_distance = mean(distance)) %>%
+  arrange(desc(number))|>filter(word != "road")|>ungroup()
+
+
+nearby_budget_roads_df <- nearby_budget_roads_dist|>
+  group_by(word, distance)|>
+  summarise(freq = n())|>ungroup()|>arrange(desc(distance))|>
+  filter(!word %in% c("road", "roads"))
+
+
+nearby_budget_roads_df|>filter(distance < 8)|>
+  filter(word %in% tolower(village_df))|>
+  mutate(word = str_to_title(word))|>
+  ggplot()+
+  geom_col(aes(reorder(word, freq), freq), fill = "navyblue")+
+  labs(y = "coccurrence frequency count", x = "",
+       title = "proximity of 'road' from town names in the 2000 budget",
+       subtitle = "proximity of < 8 distance vs frequency of cooccurence",
+       caption = "Author graph based on Ghana Budget Statements from
+       https://mofep.gov.gh/sites/default/files/")+
+  coord_flip()+
+  theme_classic()
+
+
+##to be used to map towns and road projects
+
+
+
+################find more towns
+
+#expand development themes
+
+
+##create a subset of the dataframe defined by the presence/abscence 
+#of the development terms (my defined dictionary)
+
+##find the development topics in the budgets of 1999-2022
+
+##expand the development dictionary
+
+dev_dictionary <- c("hospital", "electricity", "crime", "refugee", "school",
+                    "refinery", "road", "cocoa", "sports", "roads", "ecg", 
+                    "gold", "mineral", "water", "poverty", "disease", "housing",
+                    "smuggling", "corruption", "development", "food", "chps",
+                    "malaria", "salt", "police", "vehicle", "accident", "clinic",
+                    "university", "college", "teacher", "student", "fees", "fishing",
+                    "women", "children", "hiv", "petrol", "bank", "manufacturing", 
+                    "vegetables", "farms", "galamsey", "spraying", "export", "primary",
+                    "brutality", "violence", "conflict", "chieftaincy","factory",
+                    "gas", "dispute", "road-network", "allocation", "nursing")
+
+
+dev_dictionary <- sort(dev_dictionary)
+
+
+dev_dictionary_c <- str_c(dev_dictionary, collapse = "|")
+
+#[1] "hospital|university|school|farm|hogs|electricity|export"
+
+dev_topics_found_tb <- str_subset(budget_df_sentences$sentence, dev_dictionary_c)
+dev_topics_found_tb <- as_tibble(dev_topics_found_tb)
+budget_dev_nexus <- inner_join(budget_df_sentences, dev_topics_found_tb, by = c("sentence"= "value"))
+
+##287 4
+
+#USE BUDGET_DEV_NEXUS to create tdmidf
+
+library(tm)
+
+myCorpus <- Corpus(VectorSource(budget_dev_nexus$sentence))
+myCorpus <- tm_map(myCorpus, content_transformer(tolower))
+removeURL <- function(x) gsub("http[^[:space:]]", "", x)
+myCorpus <- tm_map(myCorpus, content_transformer(removeURL))
+removeNumPunct <- function(x) gsub("[^[:alpha:][:space:]]", "", x)
+myCorpus <- tm_map(myCorpus, content_transformer(removeNumPunct))
+myStopwords <- c(stopwords('english'), "available", "via")
+myStopwords <- setdiff(myStopwords, c("r", "big"))
+myCorpus <- tm_map(myCorpus, removeWords, myStopwords)
+myCorpus <- tm_map(myCorpus, stripWhitespace)
+
+###use the ghana towns data to subset the dev_town_terms
+
+dtm_town_names <- DocumentTermMatrix(myCorpus, list(dictionary = tolower(village_df)))
+
+dtm_town_names <- dtm_town_names|>as.matrix()|>as_tibble()|>
+  mutate(dido = row_number())|>
+  pivot_longer(-dido)|>
+  mutate(name = str_to_title(name))|>select(-dido)|>
+  filter(!name %in% c("Base", "Mahama", "Site", "Dam", "Akufo",
+                      "Home", "Live"))
+
+
+dtm_town_names|>filter(value > 0)|>
+  ggplot()+
+  geom_col(aes(reorder(name, value), value))+ 
+  # show.legend = FALSE)+
+  coord_flip()+
+  labs(fill = "Years", x = "",
+       title = "Occurrence of towns one or more times in Ghana budget 2000",
+       caption = "Author graph based on Ghana Budget Statement 2000 from
+       https://mofep.gov.gh/sites/default/files/ | @paagbodza")+
+  theme_classic()
+
+
+
+##from dataset generated from tfidf
+
+dtm_dev_tdidf <- DocumentTermMatrix(myCorpus, 
+                        list(weighting = function(x) weightTfIdf(x, normalize =FALSE)))
+
+
+dtm_dev_tdidf <- dtm_dev_tdidf|>as.matrix()|>as_tibble()|>
+  mutate(dido = row_number())|>
+  pivot_longer(-dido)|>filter(name > 0)|>
+  filter(name %in% tolower(village_df))|>
+  filter(value > 0)
+
+
+dtm_dev_tdidf|>mutate(name = str_to_title(name))|>
+  ggplot()+
+  geom_col(aes(reorder(name, value), value))+ 
+  # show.legend = FALSE)+
+  coord_flip()+
+  labs(fill = "Years", x = "",
+       title = "Occurrence of towns one or more times in Ghana budget 2000",
+       subtitle = "from the tfidf as unique terms in document",
+       caption = "Author graph based on Ghana Budget Statement 2000 from
+       https://mofep.gov.gh/sites/default/files/ | @paagbodza")+
+  theme_classic()
+
+
+
+
+###find location of towns using bigram only
+
+##how often is one word followed by another
+##this tells the relationship between them
+
+"3.3 Tokenizing by n-gram
+We’ve been using the unnest_tokens function to tokenize by word, or 
+sometimes by sentence, which is useful for the kinds of frequency 
+analyses we’ve been doing so far. But we can also use the function 
+to tokenize into consecutive sequences of words, called n-grams. By 
+seeing how often word X is followed by word Y, we can then build a 
+model of the relationships between them."
+
+
+library(dplyr)
+library(tidytext)
+
+
+
+#We can examine the most common bigrams using dplyr’s count():
+
+budget_bigrams_count <- budget_df_sentences %>% 
+  select(-c(count2, rowID, author)) %>% 
+  unnest_tokens(bigram, sentence, token = "ngrams", n = 2)|>
+  count(bigram, sort = TRUE)|>filter(bigram != "NA")
+
+
+
+"Now we use tidyr’s separate(), which splits a column into multiple 
+columns based on a delimiter. This lets us separate it into two columns,
+“word1” and “word2”, at which point we can remove cases where either is a 
+stop-word. This time, we use the stopwords from the package tidyr:"
+
+library(tidyr)
+
+# seperate words
+
+bigrams_separated <- budget_df_sentences %>% 
+  select(-c(count2, rowID, author)) %>% 
+  unnest_tokens(bigram, sentence, token = "ngrams", n = 2)%>%
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+#735,297
+#725,886 × 8
+
+
+
+# filter stop words and NA
+
+redundant_2 <- c("dramani", "akufo", "addo", "\\btel\\b", "mahama",
+                 "and", "the", "for", "has", "was", "its",
+                 "will", "ghana", "with", "also", "our", "this", "that", 
+                 "all", "are", "them", "ghana",
+                 "speaker", "madam", "region", "hqtrs", "\\bbase\\b")
+
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(!word1 %in% redundant_2)|>
+  filter(!word2 %in% redundant_2)|>
+  filter(!is.na(word1))
+
+#6406 3
+
+
+
+###search the towns in the bigrams
+##this is in view of towns having two names
+##do we have any Ghanaian towns in this data set?
+
+
+budget_bigrams_count_towns <- budget_bigrams_count|>
+  filter(bigram %in% tolower(village_df))
+
+budget_bigrams_count|>filter(bigram %in% tolower(village_df))##4 2
+
+"bigram             n
+  <chr>          <int>
+1 half assini        2
+2 afram plains       1
+3 cape coast         1
+4 dormaa ahenkro     1"
+
+
+#4 unique towns
+
+
+budget_bigrams_filtered_towns <- bigrams_filtered|>rowid_to_column("id")|>
+  filter(word1 %in% tolower(village_df) & word2 %in% tolower(village_df))|>
+  filter(word1 != word2)|>pivot_longer(-id)|>select(-name)|>
+  rename(bigram = value)|>group_by(bigram)|>
+  summarise(n = n())|>ungroup()
+
+#44 2
+
+##combine all towns in the budget statement
+
+b_towns_bigram_df <- bind_rows(budget_bigrams_filtered_towns, budget_bigrams_count_towns)|>
+  data.frame()
+
+
+b_towns_bigram_df|>mutate(bigram = str_to_title(bigram))|>
+  ggplot()+
+  geom_col(aes(reorder(bigram, n), n))+ 
+  # show.legend = FALSE)+
+  coord_flip()+
+  labs(fill = "Years", x = "",
+       title = "Occurrence of towns one or more times in Ghana budget 2000",
+       subtitle = "from the bigram and distance metric",
+       caption = "Author graph based on Ghana Budget Statement 2000 from
+       https://mofep.gov.gh/sites/default/files/ | @paagbodza")+
+  theme_classic()
+
+
+
+# new bigram counts:
+
+
+word2_themes <- bigrams_filtered|>
+  filter(word1 %in% tolower(village_df))|>
+  filter(!word2 %in% tolower(village_df))
+
+word1_themes <- bigrams_filtered|>
+  filter(word2 %in% tolower(village_df))|>
+ filter(!word1 %in% tolower(village_df))|>
+  rename(word1 = word2, word2 = word1)
+
+##towns and associated themes
+
+towns_and_themes <- rbind(word2_themes, word1_themes)|>
+  filter(word1 != word2)
+  
+
+towns_and_themes|>mutate(word1 = str_to_title(word1))|>
+  group_by(word2, word1)|>
+  summarise(n = n())|>ungroup()|>filter(!word2 %in% tolower(village_df))|>
+  ggplot()+
+  geom_col(aes(reorder(word1, n), n, fill = factor(word2)), 
+   show.legend = FALSE)+
+  coord_flip()+
+  labs(fill = "Years", x = "",
+       title = "towns and associated development themes in Ghana budget 2000",
+       subtitle = "from bigrams in document",
+       caption = "Author graph based on Ghana Budget Statement 2000 from
+       https://mofep.gov.gh/sites/default/files/ | @paagbodza")+
+  theme_classic()
+
+
+towns_and_themes|>mutate(word1 = str_to_title(word1))|>
+  group_by(word2, word1)|>
+  summarise(n = n())|>ungroup()|>
+  ggplot()+
+  geom_col(aes(reorder(word2, n), n))+ 
+  # show.legend = FALSE)+
+  coord_flip()+
+  labs(fill = "Years", x = "",
+       title = "associated development themes in Ghana budget 2000",
+       subtitle = "from bigrams",
+       caption = "Author graph based on Ghana Budget Statement 2000 from
+       https://mofep.gov.gh/sites/default/files/ | @paagbodza")+
+  theme_classic()
+
+
+
+
+####part 4: network analysis
+
+"3.4 Network analysis
+We may be interested in visualizing all of the relationships among 
+words simultaneously, rather than just the top few at a time. As one 
+common visualization, we can arrange the words into a network, or “graph.”
+Here we’ll be referring to a “graph” not in the sense of a visualization, 
+but as a combination of connected nodes. A graph can be constructed from 
+a tidy object since it has three variables:
+  
+  from: the node an edge is coming from
+to: the node an edge is going towards
+weight: A numeric value associated with each edge
+The igraph package has many functions for manipulating and analyzing networks. 
+One way to create an igraph object from tidy data is the graph_from_data_frame() 
+function, which takes a data frame of edges with columns for “from”, “to”, 
+and edge attributes (in this case n):"
+
+library(dplyr)
+library(igraph)
+
+# filter for only relatively common combinations
+
+
+
+b_towns_bigram_graph <- towns_and_themes%>%graph_from_data_frame()
+
+"We use the ggraph package to convert the igraph object into a ggraph with 
+the ggraph function, after which we add layers to it, much like layers are 
+added in ggplot2. For example, for a basic graph we need to add three layers: 
+  nodes, edges, and text:"
+
+library(ggraph)
+
+
+set.seed(48732)
+
+
+
+b_towns_bigram_graph
+
+ggraph(b_towns_bigram_graph, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point(color = "lightblue", size = 5) +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1)+
+  labs(title = "Network of the towns and terms in Ghana budget 2000")+
+  theme_void()
+
+
+
+###############################  PART FIVE #########################
+
+##create a sparse matrix
+
+
+##the co-occurrence of development themes
+##which themes go together and size
+
+#create a corpus with quanteda
+#rename headers as text and create doc_id for corpus to work on
+
+bChaps_corpus_df <- budget_df_sentences|>mutate(doc_id = paste0(1:n()))|>
+  select(-c(author, rowID, count2))|>rename(text = sentence)|>
+  mutate(text = stringi::stri_replace_all_regex(text, c("\\bjohn\\b",
+                   "\\bagyekum\\b", "\\brawlings\\b", "\\bmills\\b"), "", 
+                                                vectorise_all = FALSE))
+
+#create corpus data in quanteda
+
+bChaps_corpusB <- quanteda::corpus(bChaps_corpus_df)
+
+bChaps_tokens <- bChaps_corpusB|>tokens(remove_punct = TRUE, padding = TRUE)%>%
+  tokens_remove(stopwords("en"), padding = TRUE)
+
+##for multiple years it will be too huge and creating memory problems
+#so create them piecemeal
+
+
+##search for twon names in the dataset
+
+
+budget_phrasesB <- quanteda::kwic(bChaps_tokens, 
+                                         pattern = phrase(tolower(village_df)))
+
+
+
+names(budget_phrasesB)
+#[1] "docname" "from"    "to"      "pre"     "keyword" "post"    "pattern"
+#[1] 42356     7
+
+#Merge Columns in R with the unite() Function (tidyr)
+#Here’s how we concatenate two, or more, columns using the unite() function:
+
+library(tidyr)
+
+## 388   2
+
+
+budget_count_df <- budget_phrasesB|>as_tibble()|>
+  select(-c(from, to))|>mutate(pattern = tolower(pattern))|>
+  tidyr::unite("collapsed_sentence", pre:post, sep = " ")|>
+  mutate(collapsed_sentence = gsub(" ", "; ", collapsed_sentence))|>
+  distinct(docname, collapsed_sentence, .keep_all = TRUE)|>
+  group_by(docname, pattern, collapsed_sentence)|>
+  summarise(Freq = n()) %>%
+  arrange(desc(Freq))|>
+  ungroup()
+
+###############
+
+##to create a sparse matrix of towns and development themes
+
+dev_dict_sub <- c("hospital", "electricity", "school", "refinery", "road", "cocoa",  
+                  "chps", "construction",  "clinic", "university", "college", 
+                  "fishing", "farms", "manufactur", "export")
+names(dev_dict_sub) <- dev_dict_sub
+
+levels_dict <- dev_dict_sub
+
+
+#resp.split <- strsplit(budget_count$collapsed_sentence, ",")
+#resp_dummy_budget <- lapply(resp.split, function(x) table(factor(x, levels = levels_dict)))
+#Data2 <- with(Data, data.frame(Student_ID, do.call(rbind, resp.dummy), Grades))
+#Data2
+
+
+resp.split <- strsplit(budget_count_df$collapsed_sentence, ";")
+
+budget_matrix_sparse <- with(budget_count_df, data.frame(pattern, 
+                                                         t(sapply(resp.split, function(x) 
+                                                           table(factor(x, levels = levels_dict))))))
+
+
+head(budget_matrix_sparse)
+
+#https://stackoverflow.com/questions/56264462/how-to-convert-comma-separated-multiple-
+#responses-into-dummy-coded-columns-in-r
+
+
+
+budget_matrix_longer <- budget_matrix_sparse|>as_tibble()|>
+  pivot_longer(-pattern)|>
+  distinct(.keep_all = TRUE)
+
+
+
+budget_matrix_longer|>filter(value > 0)|> 
+  ggplot()+
+  geom_col(mapping = aes(name, value,
+                         fill = factor(name)))+
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(x = "", y = "", fill = "bdev project",
+       title = "Plot of Ghana budgets 2000 the 
+  development projects undertaken in them during each budget year",
+       caption = "Author graph based on Ghana Budget Statements from
+       https://mofep.gov.gh/sites/default/files/ | @paagbodza")
+
+
+
+
+
+##check the intersection of two sets
+##check from the new DF if which development themes map with which town
+
+dev_dict2 <- c("hospital", "electricity", "school", "refinery", "road", "cocoa",  
+               "chps", "construction",  "clinic", "university", "college", 
+               "fishing", "farms", "manufactur", "export")
+
+
+
+dev_dict_sub <- c("hospital", "electricity|ecg", "school", "refinery", "road", "cocoa",  
+                  "chps", "construction",  "clinic", "university", "college", 
+                  "fishing", "farms", "manufacturing")
+
+names(dev_dict_sub) <- dev_dict_sub
+
+#budget_count_df|>print(n = nrow(budget_count_df))
+
+budget_subset <- budget_count_df$collapsed_sentence
+
+developmt_matrix <- purrr::map_dfc(budget_subset, stringr::str_detect, dev_dict_sub) %>%
+  data.frame() %>%
+  t() %>%
+  as_tibble()
+
+dim(developmt_matrix)
+#[1] 189    14
+
+colnames(developmt_matrix)  <- dev_dict_sub
+
+developmt_matrix$count <- budget_count_df$Freq
+
+# set a common number of rows, one for each term
+#(make sure that the term identifiers are the same for both files)
+
+##get the intersections
+
+budget_indvs <- developmt_matrix%>%tidyr::uncount(count) 
+budget_indvs
+
+
+dim(budget_indvs) #16189   14
+dim(budget_count_df) #189    3
+
+#rownames(developmt_matrix) <- c(budget_count_df$docname)
+
+
+library(ComplexUpset)
+
+upset(budget_indvs, dev_dict_sub, 
+      name = "Development topic groupings by frequency. Ghana budgets 1999-2022", 
+      min_size = 0,
+      width_ratio = 0.125) +
+  labs(title = "Co-occurence of select development themes in budget",
+       caption = "Author graph based on Ghana Budget Statements from
+       https://mofep.gov.gh/sites/default/files/ | @paagbodza")
+
+
+
+########################################################
+
+#### PART SIX############################################
+
+
+##document feature matrix
+
+#b_dfm <- dfm(corpus(budget_df_sentences$sentence), tolower = TRUE, 
+#             remove = stopwords("english"), remove_punct = TRUE)
+
+budget_dfm <- dfm(tokens(budget_df_sentences$sentence), tolower = TRUE, 
+                  dfm_remove = stopwords("english"), remove_punct = TRUE)
+
+
+##filter/weight document
+
+budget_dfmidf <- dfm_tfidf(budget_dfm)
+
+##dictionary approach
+
+dev_dictionary <- c("hospital", "electricity", "crime", "refugee", "school",
+                    "refinery", "road", "cocoa", "sports",  
+                    "gold", "mineral", "water", "poverty", "disease", "housing",
+                    "smuggling", "corruption", "development", "food", "chps",
+                    "malaria", "salt", "police", "vehicle", "accident", "clinic",
+                    "university", "college", "teacher", "student", "fees", "fishing",
+                    "women", "children", "hiv", "petrol", "bank",  
+                    "vegetables", "farms", "galamsey", "spraying",
+                    "brutality", "violence", "conflict", "chieftaincy",
+                    "gas", "dispute", "road-network", "allocation", "export")
+
+
+dev_dict_edited <- quanteda::dictionary(list(health = c("hospital", "chps","clinic", "health", "doctors", "nurses"),
+                                   roads = c("road", "roads", "bridge", "railway", "highways", "roadnet work"),
+                                   education = c("school", "university", "college", "teacher", "nursing", "school block"),
+                                   industry = c("factory", "industrial", "small scale", "manufacturing", "machinery", "car making"),
+                                   farm = c("vegetable", "fruit", "foodstuff", "mango", "orange", "okra"),
+                                   commercfarm = c("maize", "coffee", "yam", "cassava", "Cereals", "grains"),
+                                   cocoa = c("cocoa farms", "cocoa season", "cocoa", "cocoa shed", "cocoa lands", "spraying"),
+                                   mining = c("gold", "mineral", "refinery", "diamond", "oil", "bauxite"),
+                                   violence = c("dispute", "violence", "fighting", "shooting", "murder", "killing"),
+                                   flood = c("flood", "flooding", "river banks", "floods", "flooded", "waterways"),
+                                   vitals = c("water", "electricity", "housing", "water wells", "bore holes", "shelter"),
+                                   corruption = c("corruption", "bribery", "embezzle", "cheating", "graft", "inflate amount"),
+                                   economic = c("inflation", "gdp", "government debt", "foreign exchange", "usdghc", "exchange rate")))
+
+
+dfmidf_dictionary <- dfm_lookup(budget_dfmidf, dev_dict_edited, nomatch = "_unmatched")
+
+
+b_DF <- as.matrix(dfmidf_dictionary)|>data.frame()
+b_DF <- b_DF[,-14]
+
+
+
+b_DF_long <- b_DF|>as_tibble()|>rownames_to_column("text_nr")|>
+  mutate(text_nr = c(budget_df_sentences$author))|>
+  mutate(text_nr = gsub("B_", "", text_nr))|>
+  pivot_longer(-text_nr)|>filter(value > 0)
+
+#199 × 3
+
+
+##plot
+
+b_DF_long|>group_by(text_nr, name)|>
+  summarise(valuer = sum(value))|>
+  rename(years = text_nr)|>ungroup()|>
+  ggplot()+
+  geom_col(aes(name, valuer, fill = years), 
+           position = "dodge", show.legend = FALSE)+
+  labs(title = "size of development issues in the 2000 budget")+
+  theme_classic()+
+scale_x_discrete(labels = scales::wrap_format(5))
+
+
+
+
+
+
+##################### PART SEVEN ##################  MAPPING
+
+
+gha_settlement <- read_excel("~//gha_settlements.xlsx")
+
+names(gha_settlement)
+#NAME REFNAME LONG LAT ADM2_EN ADM1_EN  ADM0_EN
+
+#Data last updated	April 14, 2021
+#https://data.humdata.org/dataset/39c93395-732c-408c-a95d-eec4ce7e8b25/resource/049790e9-7437-40dd-a21a-8f7558e2469f/download/gha_ppl_1m_nga.zip
+
+#Excel Summary
+#URL: https://data.humdata.org/dataset/39c93395-732c-408c-a95d-eec4ce7e8b25/resource/c34f08d0-3be6-42ee-8a93-3d64e1da1fb1/download/gha_settlements.xlsx
+
+#From the dataset abstract
+#Settlements places of Ghana The dataset represents the settlements of Ghana with 
+#harmonized PCODES of ROWCA and Humanitarian Response. The classification of capitals has 
+#been also...
+
+##https://data.humdata.org/group/gha
+#https://data.humdata.org/dataset/ghana-settlements
+
+
+
+library(rgdal)
+
+ghana_shp <- rgdal::readOGR(dsn="~//Data_Shapefile/gadm36_GHA_shp", 
+                            layer = "gadm36_GHA_2")
+
+ghana_260 <- raster::shapefile("~//Data_Shapefile/Ghana_New_260_District-shp/ff6d4f1a-07cd-46c4-b260-eb3356687ab6202045-1-jgmzb2.17p4.shp")
+
+
+##mapping
+
+##mapping the towns and projects
+
+
+ghana_nat    <- ggplot2::fortify(ghana_shp, region = "NAME_0")
+
+ghana_260df <- fortify(ghana_260, region = "DISTRICT")
+ghana_260df <- rename(ghana_260df, DISTRICT = id) 
+
+
+
+gha_settlement <- read_excel("~//gha_settlements.xlsx")
+
+names(gha_settlement)
+#NAME REFNAME LONG LAT ADM2_EN ADM1_EN  ADM0_EN
+
+
+budget_pattern <- budget_phrasesB|>#
+  tibble::as_tibble()|>dplyr::select(-c(from, to))|>
+  mutate(pattern = tolower(pattern))|>
+  tidyr::unite("collapsed_sentence", pre:post, sep = " ")|>
+  mutate(collapsed_sentence = gsub(" ", "; ", collapsed_sentence))|>
+  distinct(docname,collapsed_sentence, .keep_all = TRUE)|>
+  group_by(docname, pattern, collapsed_sentence)|>
+  summarise(Freq = n()) %>%
+  arrange(desc(Freq))|>
+  ungroup()
+
+budget_matrix_longer <- budget_matrix_sparse|>
+  rename(towns = pattern)|>
+  as_tibble()|>
+  pivot_longer(-towns)|> distinct(.keep_all = TRUE)
+
+
+
+budget_latlong <- left_join(budget_matrix_longer, gha_settlement|>select(LAT, LONG, NAME)|>
+                              mutate(NAME = tolower(NAME)), 
+                            by = c("towns" ="NAME"))
+
+dim(budget_latlong) #2207  5
+
+budget_latlong_sub <- left_join(budget_matrix_longer, 
+                                gha_settlement|>select(LAT, LONG, REFNAME)|>
+                                  mutate(REFNAME = tolower(REFNAME)), 
+                                by = c("towns" ="REFNAME"))|>
+  filter(LAT != "NA", LONG != "NA")
+
+
+budget_latlong_df <- bind_rows(budget_latlong, budget_latlong_sub)|>
+  as_tibble()
+
+dim(budget_latlong_df)
+##2539    5
+
+
+
+#recall
+ghana_nat <- fortify(ghana_shp, region = "NAME_0")
+
+
+
+
+ggplot(ghana_nat)+
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               alpha = 0.3, fill = "NA", color = "grey40")+
+  #geom_path(aes(x = long, y = lat, group = group), 
+  #          color = "blue", alpha = 0.3)+
+  coord_map()+
+  geom_point(data = budget_latlong_df|>filter(LAT != "0"),
+             aes(x = LONG, y = LAT, color = factor(name))) + 
+  labs(title = "All towns in the Ghana 2000 budget statement",
+       subtitle = "Differentiated by project type",
+       x = "Longitude", y = "Latitude", color = "years",
+       caption = "Author map based on textual budget statements
+       of Ghana from https://mofep.gov.gh/sites/default/files/
+       Shapefile from data.humdata.org and gadm.org") +
+  theme_void()
+
+
+####use nearby towns to create maps
+
+road_town_nexus_df <- nearby_budget_roads_df|>filter(word %in% tolower(village_df))
+
+
+road_latlong <- left_join(road_town_nexus_df, gha_settlement|>select(LAT, LONG, NAME)|>
+                            mutate(NAME = tolower(NAME)), 
+                          by = c("word" ="NAME"))
+
+ggplot(ghana_nat)+
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               alpha = 0.3, fill = "NA", color = "grey40")+
+  #geom_path(aes(x = long, y = lat, group = group), 
+  #          color = "blue", alpha = 0.3)+
+  coord_map()+
+  geom_point(data = road_latlong|>filter(LAT != "0"), show.legend = FALSE,
+             aes(x = LONG, y = LAT), color = "brown") + 
+  labs(title = "All road construction and associated towns 
+  in the Ghana 2000 budget statement",
+       #subtitle = "Differentiated by years",
+       x = "Longitude", y = "Latitude", color = "years",
+       caption = "Author map based on textual budget statements
+       of Ghana from https://mofep.gov.gh/sites/default/files/
+       Shapefile from data.humdata.org and gadm.org") +
+  theme_void()
+
+
+
+
+
+
+##load leaflet to create an interactive map
+
+library(leaflet)
+
+road_latlong2 <- road_latlong|>mutate(word = str_to_title(word))|>
+  mutate(freq_info = paste(word, "<br/>", distance, "<br/>",
+                           "freq", freq, "<br/>", "town", word))
+
+col_vars <- c("green", "blue") #gradient range
+col_pals_road <- colorFactor(col_vars, road_latlong2$freq_info)
+
+leaflet()|>
+  addTiles()|>
+  addCircleMarkers(data = road_latlong2|>filter(LAT!="0"),
+                   lat = ~LAT,
+                   lng = ~LONG, radius = ~3,
+                   popup = ~freq_info,
+                   color = ~col_pals_road((freq_info)))
+
+
+
+
